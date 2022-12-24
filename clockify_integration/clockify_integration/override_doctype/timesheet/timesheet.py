@@ -11,11 +11,11 @@ def sync_clocify(from_date):
     naive_dt = naive_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     naive_end_dt = naive_end_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     # return naive_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-    workspace_id =  frappe.db.get_single_value('Task List Settings', 'workspace_id')
+    workspace_id =  frappe.db.get_single_value('Clockify Settings', 'workspace_id')
     employee = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
 
     if employee:   
-        user_id = frappe.db.get_value("Task List Setting Users", {"erp_user": employee}, ["clockify_id", "clockify_key"], as_dict=1)
+        user_id = frappe.db.get_value("Clockify Users", {"erp_user": employee}, ["clockify_id", "clockify_key"], as_dict=1)
         if user_id:
             str_url = "https://api.clockify.me/api/v1/workspaces/{workspace_id}/user/{user_id}/time-entries?start={date}&end={end_dt}".format(workspace_id = workspace_id, user_id = user_id.clockify_id, date = naive_dt, end_dt = naive_end_dt)
 
