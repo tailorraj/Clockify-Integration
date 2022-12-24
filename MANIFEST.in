@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include clockify_integration *.css
+recursive-include clockify_integration *.csv
+recursive-include clockify_integration *.html
+recursive-include clockify_integration *.ico
+recursive-include clockify_integration *.js
+recursive-include clockify_integration *.json
+recursive-include clockify_integration *.md
+recursive-include clockify_integration *.png
+recursive-include clockify_integration *.py
+recursive-include clockify_integration *.svg
+recursive-include clockify_integration *.txt
+recursive-exclude clockify_integration *.pyc
