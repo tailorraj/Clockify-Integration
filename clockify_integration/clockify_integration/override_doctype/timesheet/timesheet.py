@@ -55,11 +55,14 @@ def sync_clocify(from_date):
                         # })     
 
                         # ts.save(ignore_permissions=True)
+                        project_id = item['projetID']
+                        project_name = get_clockify_project_name(workspace_id, api_key, project_id)
                         log = {
                             "from_time": start_dt,
                             "to_time": end_dt,
                             "description": item["description"],
-                            "diff": float("%0.4f" % (hours)) 
+                            "diff": float("%0.4f" % (hours)),
+                            "project_name":project_name 
                         }
                         time_sheet.append(log)
 
@@ -72,4 +75,20 @@ def sync_clocify(from_date):
             frappe.throw("No Clocify Id Assigned to the User")
     
     else:
-        frappe.throw("Employee Not Creeated for you")
+        frappe.throw("Employee Not Created for you")
+
+
+def get_clockify_project_name(workspace_id, api_key, project_id):
+    url = f"https://api.clockify.me/api/v1/workspaces/{workspace_id}/projects/{project_id}"
+    header = {
+        "X-Api-Key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    response = requests.get(url, headers=header)
+    if response.status_code == 200:
+        data = response.json()
+        project_name = data.get('name')
+        return project_name
+    else:
+        return None

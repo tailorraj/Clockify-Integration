@@ -39,6 +39,7 @@ frappe.ui.form.on('Timesheet', {
                                     childTable.to_time=r.message[i].to_time
                                     childTable.hours=r.message[i].diff
                                     childTable.description=r.message[i].description
+                                    childTable.project=r.message[i].project_name
                                     total_diff += r.message[i].diff
                                 }
                                 frm.doc.total_hours = total_diff
