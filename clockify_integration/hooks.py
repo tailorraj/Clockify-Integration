@@ -105,6 +105,12 @@ doctype_js = {
 #	}
 # }
 
+doc_events = {
+	"Project": {
+		"validate": "clockify_integration.clockify_integration.override_doctype.project.project.validate",
+	}
+}
+
 # Scheduled Tasks
 # ---------------
 
