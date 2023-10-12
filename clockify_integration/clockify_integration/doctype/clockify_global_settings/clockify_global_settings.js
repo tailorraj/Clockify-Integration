@@ -17,43 +17,39 @@ frappe.ui.form.on('Clockify Global Settings', {
 		});
 
 		frm.add_custom_button(__('Sync Employee Timesheet'), function(){
-			let d = new frappe.ui.Dialog({
-				title: 'Enter details',
-				fields: [
-					{
-						label: 'For Date',
-						fieldname: 'for_date',
-						fieldtype: 'Date',
-						reqd: 1
-					}
-				],
-				primary_action_label: 'Submit',
-				primary_action(values) {
-					console.log(values.for_date);
-					frappe.call({
-						method: 'clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_timesheet',
-						args: {
-							from_date: values.for_date
-						},
-						// disable the button until the request is completed
-						btn: $('.primary-action'),
-						// freeze the screen until the request is completed
-						freeze: true,
-						callback: (r) => {
-							// on success
-							console.log(r)
-							
-							d.hide();
-						},
-						error: (r) => {
-							// on error
-						}
-					})
+
+			frappe.call({
+				method: 'clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_timesheet',
+				args: {
+					'from_date': frappe.datetime.nowdate()
+				},
+				freeze: true,
+				callback: (r) => {
+					// on success
+					console.log(r)
 					
-				}
-			});
+				},
+			})
 			
-			d.show();
+		});
+
+
+		frm.add_custom_button(__('Sync Employee Attendance'), function(){
+
+			frappe.call({
+				method: 'clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_attendance_based_on_timesheet',
+				args: {
+					from_date: frappe.datetime.nowdate()
+				},
+				freeze: true,
+				callback: (r) => {
+					// on success
+					console.log(r)
+					
+					d.hide();
+				},
+			})
+			
 		});
 	}
 });

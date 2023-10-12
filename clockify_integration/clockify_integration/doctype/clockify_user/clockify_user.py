@@ -9,6 +9,10 @@ class ClockifyUser(Document):
 	# pass
 
 	def validate(self):
+
+		if not self.user_id:
+			frappe.throw("Please Set Data of User ID in Document!")
+
 		workspace_id = frappe.db.get_single_value('Clockify Global Settings', 'workspace_id')
 		if not workspace_id:
 			frappe.throw("Please set Workspace ID in Clockify Global Settings!")
@@ -37,7 +41,9 @@ class ClockifyUser(Document):
 				frappe.throw(f"Clockify API request failed with status code {response.status_code}")
 
 		except requests.exceptions.RequestException as e:
-			frappe.throw(f"Error making a request to Clockify API: {str(e)}")
+			frappe.log_error(message = frappe.traceback(),title='Request Failed To Clockify API')
+			frappe.throw(f"Error Making a request to Clockify API: {str(e)}")
 		except Exception as e:
+			frappe.log_error(message = frappe.traceback(),title='Error Making Request To Clockify API')
 			frappe.throw(f"An unexpected error occurred: {str(e)}")
 					
