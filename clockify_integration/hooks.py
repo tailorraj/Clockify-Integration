@@ -72,7 +72,17 @@ doctype_js = {
 # See frappe.core.notifications.get_notification_config
 
 # notification_config = "clockify_integration.notifications.get_notification_config"
+fixtures = [
 
+	{"dt": "Workspace", "filters": [
+		[
+			"name", "in", [
+				"Clockify Integration-Administrator"
+			]
+		]
+	]},
+	
+]
 # Permissions
 # -----------
 # Permissions evaluated in scripted ways
