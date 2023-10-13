@@ -55,8 +55,8 @@ def sync_clocify(from_date):
                         # })     
 
                         # ts.save(ignore_permissions=True)
-                        project_id = item['projetID']
-                        project_name = get_clockify_project_name(workspace_id, api_key, project_id)
+                        project_id = item['projectId']
+                        project_name = get_clockify_project_name(workspace_id, user_id.clockify_key, project_id)
                         log = {
                             "from_time": start_dt,
                             "to_time": end_dt,

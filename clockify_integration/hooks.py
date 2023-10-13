@@ -72,7 +72,17 @@ doctype_js = {
 # See frappe.core.notifications.get_notification_config
 
 # notification_config = "clockify_integration.notifications.get_notification_config"
+fixtures = [
 
+	{"dt": "Workspace", "filters": [
+		[
+			"name", "in", [
+				"Clockify Integration-Administrator"
+			]
+		]
+	]},
+	
+]
 # Permissions
 # -----------
 # Permissions evaluated in scripted ways
@@ -105,9 +115,25 @@ doctype_js = {
 #	}
 # }
 
+doc_events = {
+	"Project": {
+		"validate": "clockify_integration.clockify_integration.override_doctype.project.project.validate",
+	}
+}
+
 # Scheduled Tasks
 # ---------------
-
+scheduler_events = {
+    
+    "cron": {
+        "0 23 * * *": [
+            "clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_timesheet"
+        ],
+        "30 23 * * *": [
+            "clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_attendance_based_on_timesheet"
+        ]
+    }
+}
 # scheduler_events = {
 #	"all": [
 #		"clockify_integration.tasks.all"
