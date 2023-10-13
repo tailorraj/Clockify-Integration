@@ -56,7 +56,7 @@ def sync_project(workspace_id):
 
 @frappe.whitelist()
 def sync_employee_timesheet(from_date):
-
+	from_date = frappe.utils.today()
 	try:
 		start_datetime, end_datetime = prepare_datetimes(from_date)
 		workspace_id = get_clockify_workspace_id()
@@ -179,6 +179,7 @@ def get_clockify_project_name(workspace_id, clockify_key, project_id):
 
 @frappe.whitelist()
 def sync_employee_attendance_based_on_timesheet(from_date):
+	from_date = frappe.utils.today()
 	try:
 		timesheets = frappe.get_all("Timesheet", filters={"start_date": from_date}, fields=["total_hours", "employee_name","employee"])
 

@@ -27,7 +27,6 @@ frappe.ui.form.on('Clockify Global Settings', {
 				callback: (r) => {
 					// on success
 					console.log(r)
-					
 				},
 			})
 			
@@ -45,8 +44,6 @@ frappe.ui.form.on('Clockify Global Settings', {
 				callback: (r) => {
 					// on success
 					console.log(r)
-					
-					d.hide();
 				},
 			})
 			
