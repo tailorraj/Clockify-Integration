@@ -179,5 +179,43 @@ def sync_employee_attendance_based_on_timesheet():
 		frappe.log_error(message = frappe.get_traceback(),title='Syncing Employee Attendance Based On Timesheet Conflicts')
 		frappe.throw("Error Occured While Creating Attendance!")
 
+@frappe.whitelist()
+def sync_employee_attendance_based_on_timesheet():
+	from_date = frappe.utils.today()
+	try:
+		employee_shift_timings = frappe.get_all("Employee Shift Timings", fields=["min_working_hours_for_half_day", "min_working_hours_for_present", "employee_name", "employee", "holidays"])
+
+		for employee in employee_shift_timings:
+			timesheet = frappe.get_value('Timesheet', 
+				{'employee': employee.employee, 'start_date': from_date},
+				['total_hours', 'employee_name'], as_dict=True)
+
+			attendance_status = "Absent"  # Initialize to a default value
+
+			if timesheet and timesheet.total_hours is not None:
+				attendance_status = "Present" if timesheet.total_hours >= employee.min_working_hours_for_present else "Half Day" if timesheet.total_hours >= employee.min_working_hours_for_half_day else "Absent"
+				frappe.msgprint(f"{employee.employee_name} is {attendance_status} for {from_date}")
+			else:
+				holiday_doc = frappe.get_doc('Holiday List', {'name':employee.holidays})
+
+				if not any(from_date == str(hd.holiday_date) for hd in holiday_doc.holidays):
+					frappe.msgprint(f"{employee.employee_name} is absent for {from_date}")
+
+			if not frappe.get_all("Attendance", filters={"employee": employee.employee, 'attendance_date': from_date}):
+				attendance_doc = frappe.new_doc("Attendance")
+				attendance_doc.update({
+					"employee": employee.employee,
+					"attendance_date": from_date,
+					"status": attendance_status,
+					"working_hours": timesheet.total_hours if timesheet and timesheet.total_hours is not None else 0,
+					"leave_type": "Leave Without Pay" if attendance_status == "Half Day" else None
+				})
+				attendance_doc.insert(ignore_permissions=True)
+				attendance_doc.submit()
+	
+	except Exception as e:
+		frappe.log_error(message=frappe.get_traceback(), title='Syncing Employee Attendance Based On Timesheet Conflicts')
+		frappe.msgprint("Error occurred while creating attendance!")
+
 
 # ---------------------------------Sync Employee Attendance Based On Timesheet----------------------------------

@@ -10,6 +10,7 @@
  "field_order": [
   "employee",
   "employee_name",
+  "holidays",
   "column_break_zbtos",
   "min_working_hours_for_half_day",
   "min_working_hours_for_present"
@@ -43,11 +44,17 @@
    "label": "Employee Name",
    "read_only": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "holidays",
+   "fieldtype": "Link",
+   "label": "Holidays",
+   "options": "Holiday List"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-12 15:59:30.937243",
+ "modified": "2023-10-16 13:08:40.570453",
  "modified_by": "Administrator",
  "module": "Clockify Integration",
  "name": "Employee Shift Timings",
