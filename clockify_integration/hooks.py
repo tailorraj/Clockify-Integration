@@ -126,10 +126,10 @@ doc_events = {
 scheduler_events = {
     
     "cron": {
-        "0 23 * * *": [
+        "0 3 * * *": [
             "clockify_integration.ci.sync_employee_timesheet"
         ],
-        "30 23 * * *": [
+        "30 3 * * *": [
             "clockify_integration.ci.sync_employee_attendance_based_on_timesheet"
         ]
     }
