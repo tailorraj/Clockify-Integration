@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 
 @frappe.whitelist()
 def sync_employee_timesheet():
-	# from_date = frappe.utils.today()
-	from_date = (datetime.strptime(from_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
+	current_date = frappe.utils.today()
+	from_date = (datetime.strptime(current_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
 	try:
 		start_datetime, end_datetime = prepare_datetimes(from_date)
 		workspace_id = get_clockify_workspace_id()
@@ -132,8 +132,8 @@ def get_clockify_project_name(workspace_id, clockify_key, project_id):
 
 @frappe.whitelist()
 def sync_employee_attendance_based_on_timesheet():
-	# from_date = frappe.utils.today()
-	from_date = (datetime.strptime(from_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
+	current_date = frappe.utils.today()
+	from_date = (datetime.strptime(current_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
 	try:
 		employee_shift_timings = frappe.get_all("Employee Shift Timings", fields=["min_working_hours_for_half_day", "min_working_hours_for_present", "employee_name", "employee", "holidays"])
 
