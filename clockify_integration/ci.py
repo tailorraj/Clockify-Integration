@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 
 @frappe.whitelist()
 def sync_employee_timesheet():
-	from_date = frappe.utils.today()
+	# from_date = frappe.utils.today()
+	from_date = (datetime.strptime(from_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
 	try:
 		start_datetime, end_datetime = prepare_datetimes(from_date)
 		workspace_id = get_clockify_workspace_id()
@@ -87,6 +88,7 @@ def create_timesheet_for_employee(employee, time_entries,start_datetime):
 				ts_doc.append('time_logs', item_doc)
 
 			ts_doc.insert(ignore_permissions=1)
+			ts_doc.submit()
 			frappe.msgprint("Timesheet Created Successfully For The Selected Date")
 		else:
 			frappe.msgprint("Timesheet already exists for the employee for the selected date!")	
@@ -127,61 +129,11 @@ def get_clockify_project_name(workspace_id, clockify_key, project_id):
 
 # ---------------------------------Sync Employee Attendance Based On Timesheet----------------------------------
 
-@frappe.whitelist()
-def sync_employee_attendance_based_on_timesheet():
-	from_date = frappe.utils.today()
-	try:
-		timesheets = frappe.get_all("Timesheet", filters={"start_date": from_date}, fields=["total_hours", "employee_name","employee"])
-
-		if not timesheets:
-			frappe.msgprint("No timesheets found for the specified date.")
-			return
-
-		employee_names = [t["employee"] for t in timesheets]
-
-		employee_shift_timings = frappe.get_all("Employee Shift Timings", filters={"employee": ["in", employee_names]}, fields=["min_working_hours_for_half_day", "min_working_hours_for_present", "employee_name","employee"])
-
-		shift_timings_dict = {shift["employee"]: shift for shift in employee_shift_timings}
-
-		for time in timesheets:
-			employee_name = time["employee_name"]
-			total_hours = time["total_hours"]
-			employee = time["employee"]
-
-			shift_timings = shift_timings_dict.get(employee)
-
-			if not shift_timings:
-				frappe.throw(f"Shift timings not found for employee: {employee_name}")
-
-			if shift_timings:
-				if total_hours >= shift_timings["min_working_hours_for_present"]:
-					attendance_status  = "Present"
-				elif total_hours >= shift_timings["min_working_hours_for_half_day"]:
-					attendance_status  = "Half Day"
-				else:
-					attendance_status = "Absent"
-			if not frappe.db.exists("Attendance", {"employee":employee,'attendance_date':from_date}):
-				attendance_doc = frappe.new_doc("Attendance")
-				attendance_doc.employee = employee
-				attendance_doc.attendance_date = from_date
-				attendance_doc.status = attendance_status
-				attendance_doc.working_hours = total_hours
-				if attendance_status  == "Half Day":
-					attendance_doc.leave_type = "Leave Without Pay"
-				
-				attendance_doc.insert(ignore_permissions=True)
-				attendance_doc.submit()
-			else:
-				frappe.msgprint("Attendance records already created for this user {0}.".format(employee_name))	
-		
-		frappe.msgprint("Attendance records created.")
-	except Exception as e:
-		frappe.log_error(message = frappe.get_traceback(),title='Syncing Employee Attendance Based On Timesheet Conflicts')
-		frappe.throw("Error Occured While Creating Attendance!")
 
 @frappe.whitelist()
 def sync_employee_attendance_based_on_timesheet():
-	from_date = frappe.utils.today()
+	# from_date = frappe.utils.today()
+	from_date = (datetime.strptime(from_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
 	try:
 		employee_shift_timings = frappe.get_all("Employee Shift Timings", fields=["min_working_hours_for_half_day", "min_working_hours_for_present", "employee_name", "employee", "holidays"])
 
@@ -190,10 +142,19 @@ def sync_employee_attendance_based_on_timesheet():
 				{'employee': employee.employee, 'start_date': from_date},
 				['total_hours', 'employee_name'], as_dict=True)
 
-			attendance_status = "Absent"  # Initialize to a default value
-
 			if timesheet and timesheet.total_hours is not None:
 				attendance_status = "Present" if timesheet.total_hours >= employee.min_working_hours_for_present else "Half Day" if timesheet.total_hours >= employee.min_working_hours_for_half_day else "Absent"
+				if not frappe.db.exists("Attendance", {"employee": employee.employee, 'attendance_date': from_date}):
+					attendance_doc = frappe.get_doc({
+						"doctype":"Attendance",
+						"employee": employee.employee,
+						"attendance_date": from_date,
+						"status": attendance_status,
+						"working_hours": timesheet.total_hours if timesheet and timesheet.total_hours is not None else 0,
+						"leave_type": "Leave Without Pay" if attendance_status == "Half Day" else None
+					})
+					attendance_doc.insert(ignore_permissions=True)
+					attendance_doc.submit()
 				frappe.msgprint(f"{employee.employee_name} is {attendance_status} for {from_date}")
 			else:
 				holiday_doc = frappe.get_doc('Holiday List', {'name':employee.holidays})
@@ -201,17 +162,6 @@ def sync_employee_attendance_based_on_timesheet():
 				if not any(from_date == str(hd.holiday_date) for hd in holiday_doc.holidays):
 					frappe.msgprint(f"{employee.employee_name} is absent for {from_date}")
 
-			if not frappe.get_all("Attendance", filters={"employee": employee.employee, 'attendance_date': from_date}):
-				attendance_doc = frappe.new_doc("Attendance")
-				attendance_doc.update({
-					"employee": employee.employee,
-					"attendance_date": from_date,
-					"status": attendance_status,
-					"working_hours": timesheet.total_hours if timesheet and timesheet.total_hours is not None else 0,
-					"leave_type": "Leave Without Pay" if attendance_status == "Half Day" else None
-				})
-				attendance_doc.insert(ignore_permissions=True)
-				attendance_doc.submit()
 	
 	except Exception as e:
 		frappe.log_error(message=frappe.get_traceback(), title='Syncing Employee Attendance Based On Timesheet Conflicts')
