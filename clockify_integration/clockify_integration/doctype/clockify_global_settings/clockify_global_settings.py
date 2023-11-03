@@ -56,7 +56,9 @@ def sync_project(workspace_id):
 
 @frappe.whitelist()
 def sync_employee_timesheet(from_date):
-	from_date = frappe.utils.today()
+	# from_date = frappe.utils.today()
+	current_date = frappe.utils.today()
+	from_date = (datetime.strptime(current_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
 
 	try:
 		start_datetime, end_datetime = prepare_datetimes(from_date)
@@ -68,13 +70,18 @@ def sync_employee_timesheet(from_date):
 			frappe.throw("No Employees Found")
 		
 		for employee in employee_data:
-			time_entries = fetch_clockify_time_entries(workspace_id,employee, start_datetime, end_datetime)
+			time_entries = fetch_clockify_time_entries(workspace_id, employee, start_datetime, end_datetime)
 
 			if time_entries:
-				create_timesheet_for_employee(employee, time_entries,start_datetime)
+				try:
+					create_timesheet_for_employee(employee, time_entries, start_datetime)
+				except Exception as e:
+					frappe.msgprint(f"Error processing timesheet for {employee.employee_id}: {str(e)}")
+					continue
 			else:
 				frappe.msgprint("No Timesheet Found for the Selected Date")
 				continue
+	
 
 	except Exception as e:
 		frappe.log_error(message = frappe.get_traceback(),title='Syncing Employee Timesheet Conflicts')
