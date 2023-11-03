@@ -19,7 +19,8 @@ frappe.ui.form.on('Clockify Global Settings', {
 		frm.add_custom_button(__('Sync Employee Timesheet'), function(){
 
 			frappe.call({
-				method: 'clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_timesheet',
+				// method: 'clockify_integration.clockify_integration.doctype.clockify_global_settings.clockify_global_settings.sync_employee_timesheet',
+				method: 'clockify_integration.ci.sync_employee_timesheet',
 				args: {
 					'from_date': frappe.datetime.nowdate()
 				},
