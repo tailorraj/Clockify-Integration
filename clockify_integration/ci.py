@@ -167,6 +167,19 @@ def sync_employee_attendance_based_on_timesheet():
 				if not any(from_date == str(hd.holiday_date) for hd in holiday_doc.holidays):
 					frappe.msgprint(f"{employee.employee_name} is absent for {from_date}")
 
+					if not frappe.db.exists("Attendance", {"employee": employee.employee, 'attendance_date': from_date}):
+						attendance_doc = frappe.get_doc({
+							"doctype":"Attendance",
+							"employee": employee.employee,
+							"attendance_date": from_date,
+							"status": "Absent",
+							"working_hours": 0,
+							"leave_type": None
+						})
+						attendance_doc.insert(ignore_permissions=True)
+						attendance_doc.submit()
+						frappe.msgprint(f"{employee.employee_name} is {attendance_status} for {from_date}")
+
 	
 	except Exception as e:
 		frappe.log_error(message=frappe.get_traceback(), title='Syncing Employee Attendance Based On Timesheet Conflicts')
