@@ -178,7 +178,7 @@ def sync_employee_attendance_based_on_timesheet():
 						})
 						attendance_doc.insert(ignore_permissions=True)
 						attendance_doc.submit()
-						frappe.msgprint(f"{employee.employee_name} is {attendance_status} for {from_date}")
+						# frappe.msgprint(f"{employee.employee_name} is {attendance_status} for {from_date}")
 
 	
 	except Exception as e:
